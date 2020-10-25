@@ -6,10 +6,12 @@ using UnityEngine.Serialization;
 
 public class TestCharacterController : MonoBehaviour
 {
-    [SerializeField] private Animator animator;
-    [SerializeField] private Rigidbody2D rb;
-    [SerializeField] private SpriteRenderer spriteRenderer;
+    private Animator animator;
+    private Rigidbody2D rb;
+    private SpriteRenderer spriteRenderer;
+    private Player player;
     [SerializeField] private Transform groundCheck; 
+    
     
     private float horizontalMovement = 0f;
     private bool isGrounded;
@@ -17,6 +19,8 @@ public class TestCharacterController : MonoBehaviour
     
     [SerializeField] private float runSpeed = 5f;
     [SerializeField] private float jumpSpeed = 5f;
+    private int currentState = 0;
+    private bool isAttacking = false;
 
     //animation references
     private const string PlayerRun = "Player_Run";
@@ -31,6 +35,7 @@ public class TestCharacterController : MonoBehaviour
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        player = GetComponent<Player>();
     }
 
     private void FixedUpdate()
@@ -55,12 +60,39 @@ public class TestCharacterController : MonoBehaviour
                 animator.Play(PlayerIdle);
                 rb.velocity = new Vector2(0, rb.velocity.y);
             }
-            
+
             if (Input.GetButtonDown("Jump") && isGrounded)
             {
                 rb.velocity = new Vector2(rb.velocity.x, jumpSpeed);
                 animator.Play(PlayerJump);
             }
+        }
+
+        if (Input.GetButtonDown("Fire1"))
+        {
+            isAttacking = true;
+            Attack();
+        }
+
+    }
+
+    void Attack()
+    {
+        if (isAttacking)
+        {
+            currentState++;
+            if (currentState >= 3) currentState = 1;
+
+            animator.SetTrigger("Attack" + currentState);
+
+            player.DealDamage(player.maxDamage);
+
+            isAttacking = false;
+            player.attackPoint.gameObject.SetActive(true);
+        }
+        else
+        {
+            player.attackPoint.gameObject.SetActive(false);
         }
     }
 }
